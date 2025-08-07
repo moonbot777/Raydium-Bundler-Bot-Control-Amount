@@ -109,7 +109,46 @@ export const create_extend_lut_ata = async () => {
 
 
     try {
-        
+        const programId = cluster == "devnet" ? DEVNET_PROGRAM_ID : MAINNET_PROGRAM_ID
+
+        const wallets = readBundlerWallets(bundlerWalletName)
+
+        const walletKPs: Keypair[] = wallets.map((wallet: string) => Keypair.fromSecretKey(bs58.decode(wallet)));
+        const walletPKs: PublicKey[] = wallets.map((wallet: string) => (Keypair.fromSecretKey(bs58.decode(wallet))).publicKey);
+
+        const ata = await createAtas(walletKPs, mint)
+        const LOOKUP_TABLE_ADDRESS = ata.lookupTableAddress
+
+        const txInstructions: TransactionInstruction[] = []
+
+        const tx = new Transaction()
+
+        tx.add(new ComputeBudgetProgram.setComputeUnitLimit({ units: 1000000 }))
+        tx.add(new AddressLookupTableProgram.createAddressLookupTable({
+            payer: SIGNER_WALLET.publicKey,
+            address: LOOKUP_TABLE_ADDRESS
+        }))
+
+        tx.add(new AddressLookupTableProgram.extendAddressLookupTable({
+            payer: SIGNER_WALLET.publicKey,
+            address: LOOKUP_TABLE_ADDRESS,
+            accounts: walletPKs.map((pk) => ({ pubkey: pk, isWritable: true, isSigner: false }))
+        }))
+
+        tx.add(new AddressLookupTableProgram.extendAddressLookupTable({
+            payer: SIGNER_WALLET.publicKey,
+            address: LOOKUP_TABLE_ADDRESS,
+            accounts: walletPKs.map((pk) => ({ pubkey: pk, isWritable: true, isSigner: false }))
+        }))
+
+        txInstructions.push(tx.instructions[0])
+        txInstructions.push(tx.instructions[1])
+
+        await createAndSendV0Tx(txInstructions)
+
+        console.log("   ✅ - Lookuptable created successfully")
+        mainMenuWaiting()
+        return
     } catch (err) {
         console.log("Error occurred in creating lookuptable. Please retry this again.")
         mainMenuWaiting()

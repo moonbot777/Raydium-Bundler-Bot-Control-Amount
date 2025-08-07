@@ -31,8 +31,8 @@ export const JITO_FEE = retrieveEnvVariable("JITO_FEE")
 
 // SWAP configuration
 export const SWAP = {
-  programId: cluster === "devnet" ? "9WzDXwBbmkg8ZTbNMqUxvQRAyrZzDsGYdLVL9zYtAWWM" : "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
-  authority: cluster === "devnet" ? "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1" : "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1"
+  programId: cluster === "devnet" ? "" : "",
+  authority: cluster === "devnet" ? "" : ""
 }
 
 // Wallet configuration
